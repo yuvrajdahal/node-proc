@@ -19,10 +19,12 @@ jobs:
         with:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
-      
+            
       - name: Build and push
         uses: docker/build-push-action@v6
-        with: 
+        with:
           context: .
           push: true
-          tags: ${{ secrets.DOCKERHUB_USERNAME }}/node-proc:latest
+          tags: ${{ secrets.DOCKERHUB_USERNAME }}/node-proc:${{ github.ref_name }}
+          cache-from: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/node-proc:latest
+          cache-to: type=registry,ref=${{ secrets.DOCKERHUB_USERNAME }}/node-proc:latest,mode=max
