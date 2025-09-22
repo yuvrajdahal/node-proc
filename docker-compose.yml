@@ -10,3 +10,19 @@ services:
     ports:
       - "5000:5000"
     restart: always
+
+  prom_server:
+    image: prom/prometheus
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./prometheus-config.yml:/etc/prometheus/prometheus.yml
+    depends_on:
+      - node_proc
+      - grafna_server
+
+  grafna_server:
+    image: grafana/grafana-oss
+    ports:
+      - "3000:3000"
+      

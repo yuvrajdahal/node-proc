@@ -10,6 +10,7 @@ import express, { Router, Request, Response, NextFunction } from "express";
 import { HTTPStatusCode } from "./config/constant";
 import { AppError } from "./lib/error";
 import { ErrorMiddleware } from "./middleware/error-middleware";
+import client from "prom-client";
 
 interface ServerOption {
   port: number;
@@ -42,16 +43,21 @@ export class Server {
   async start(): Promise<void> {
     this.app.use(express.json());
     this.app.use(express.urlencoded({ extended: true }));
-    this.app.use(cors(this.corsOption)); 
+    this.app.use(cors(this.corsOption));
 
-    
+    const collectDefaultMetrics = client.collectDefaultMetrics;
+    collectDefaultMetrics({ register: client.register });
+
     this.app.get("/", (req: Request, res: Response) => {
       res.status(HTTPStatusCode.Ok).json({
         status: "ok",
         message: "Welcome to TaskHive API",
       });
     });
-
+    this.app.get("/metrics", async (req: Request, res: Response) => {
+      res.set("Content-Type", client.register.contentType);
+      res.send(await client.register.metrics());
+    });
     this.app.use(this.apiPrefix, this.routes);
 
     this.app.use((req: Request, res: Response, next: NextFunction) => {
